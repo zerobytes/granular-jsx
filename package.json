@@ -1,0 +1,62 @@
+{
+  "name": "@granularjs/jsx",
+  "version": "0.1.0",
+  "description": "Optional automatic JSX runtime for @granularjs/core. Enables writing JSX (.jsx / .tsx) that compiles directly to Granular tag function calls.",
+  "type": "module",
+  "main": "./src/index.js",
+  "module": "./src/index.js",
+  "types": "./types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "import": "./src/index.js",
+      "default": "./src/index.js"
+    },
+    "./jsx-runtime": {
+      "types": "./types/jsx-runtime.d.ts",
+      "import": "./src/jsx-runtime.js",
+      "default": "./src/jsx-runtime.js"
+    },
+    "./jsx-dev-runtime": {
+      "types": "./types/jsx-runtime.d.ts",
+      "import": "./src/jsx-dev-runtime.js",
+      "default": "./src/jsx-dev-runtime.js"
+    }
+  },
+  "files": [
+    "src",
+    "types",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node ./scripts/run-tests.mjs"
+  },
+  "peerDependencies": {
+    "@granularjs/core": ">=1.8.0"
+  },
+  "devDependencies": {
+    "@granularjs/core": "file:../granular",
+    "@babel/core": "^7.28.0",
+    "@babel/preset-react": "^7.28.0",
+    "jsdom": "^26.1.0"
+  },
+  "license": "Apache-2.0",
+  "keywords": [
+    "granular",
+    "granularjs",
+    "jsx",
+    "jsx-runtime",
+    "automatic-runtime",
+    "react-replacement",
+    "tsx"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zerobytes/granular-jsx.git"
+  },
+  "homepage": "https://granular.web.app",
+  "bugs": {
+    "url": "https://github.com/zerobytes/granular-jsx/issues"
+  }
+}
