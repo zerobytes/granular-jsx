@@ -1,6 +1,6 @@
 {
   "name": "@granularjs/jsx",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Optional automatic JSX runtime for @granularjs/core. Enables writing JSX (.jsx / .tsx) that compiles directly to Granular tag function calls.",
   "type": "module",
   "main": "./src/index.js",
