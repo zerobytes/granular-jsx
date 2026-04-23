@@ -108,10 +108,21 @@ function normalizeProps(rawProps, ref) {
   return hasOwn ? out : null;
 }
 
-function isComponent(tag) {
-  return typeof tag === 'function';
+function tagNode(node, key) {
+  if (key !== undefined && node && typeof node === 'object') {
+    try { node.__granular_key = key; } catch {}
+  }
+  return node;
 }
 
+// Granular's contract: ANY factory called from JSX is variadic.
+// JSX           ->  call style
+// <div>...</div>      ->  Div(propsObj?, ...children)
+// <Stack>...</Stack>  ->  Stack(propsObj?, ...children)
+// <MyComp>...</MyComp>->  MyComp(propsObj?, ...children)
+//
+// User components that need React-style { props, children, rawProps } can use
+// `splitArgs(arguments)` from '@granularjs/jsx' (see ./helpers.js).
 function jsxImpl(tag, rawProps, key) {
   const ref = rawProps ? rawProps.ref : undefined;
   const rawChildren = rawProps ? rawProps.children : undefined;
@@ -119,43 +130,14 @@ function jsxImpl(tag, rawProps, key) {
   const children = [];
   flattenChildren(children, rawChildren);
 
-  if (isComponent(tag)) {
-    const componentProps = {};
-    let hasComponentProps = false;
-    if (rawProps) {
-      for (const k in rawProps) {
-        if (k === 'key') continue;
-        componentProps[k] = rawProps[k];
-        hasComponentProps = true;
-      }
-    }
-    if (key !== undefined) {
-      componentProps.key = key;
-      hasComponentProps = true;
-    }
-    const result = hasComponentProps ? tag(componentProps) : tag();
-    return result;
-  }
-
   if (tag === Fragment) {
     return children.length === 1 ? children[0] : children;
   }
 
-  const factory = resolveTag(tag);
+  const factory = typeof tag === 'string' ? resolveTag(tag) : tag;
   const props = normalizeProps(rawProps, ref);
-
-  let node;
-  if (props) {
-    node = factory(props, ...children);
-  } else {
-    node = factory(...children);
-  }
-
-  if (key !== undefined && node && typeof node === 'object') {
-    try { node.__granular_key = key; } catch {}
-  }
-
-  return node;
+  const node = props ? factory(props, ...children) : factory(...children);
+  return tagNode(node, key);
 }
 
 export function jsx(tag, props, key) {

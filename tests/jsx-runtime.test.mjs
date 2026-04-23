@@ -99,12 +99,17 @@ test('jsx: function components receive props', () => {
   assert.equal(root.firstChild.textContent, 'Hello, world!');
 });
 
-test('jsx: function components receive children prop', () => {
-  const Card = (props) => jsx('section', { children: props.children });
+test('jsx: user component receives children as positional args (not via props.children)', () => {
+  let collected = null;
+  const Card = (...args) => {
+    collected = args;
+    return jsx('section', { children: args });
+  };
   const node = jsx(Card, { children: 'inner' });
   const root = mountToBody(node);
   assert.equal(root.firstChild.tagName, 'SECTION');
   assert.equal(root.firstChild.textContent, 'inner');
+  assert.deepEqual(collected, ['inner']);
 });
 
 test('jsx: function components called with no args when no props', () => {
@@ -239,4 +244,74 @@ test('jsx: signal refs are populated after mount', () => {
   mountToBody(node);
   assert.ok(elRef.get());
   assert.equal(elRef.get().tagName, 'DIV');
+});
+
+const { Elements } = await import('@granularjs/core');
+
+test('jsx: uppercase Granular factory (Div) renders as <div> with text child', () => {
+  const node = jsx(Elements.Div, { children: 'hello' });
+  const root = mountToBody(node);
+  assert.equal(root.firstChild.tagName, 'DIV');
+  assert.equal(root.firstChild.textContent, 'hello');
+  assert.equal(root.firstChild.hasAttribute('children'), false, 'children must NOT leak as HTML attribute');
+});
+
+test('jsx: uppercase Granular factory accepts props plus children variadically', () => {
+  const node = jsxs(Elements.Section, {
+    className: 'wrap',
+    id: 'sec1',
+    children: [jsx('h2', { children: 'title' }), jsx('p', { children: 'body' })],
+  });
+  const root = mountToBody(node);
+  assert.equal(root.firstChild.tagName, 'SECTION');
+  assert.equal(root.firstChild.id, 'sec1');
+  assert.equal(root.firstChild.className, 'wrap');
+  assert.equal(root.firstChild.children.length, 2);
+  assert.equal(root.firstChild.children[0].tagName, 'H2');
+  assert.equal(root.firstChild.children[1].tagName, 'P');
+});
+
+test('jsx: uppercase Granular factory with reactive child stays reactive', () => {
+  const count = signal(0);
+  const node = jsx(Elements.Span, { children: count });
+  const root = mountToBody(node);
+  assert.equal(root.firstChild.textContent.trim(), '0');
+  count.set(9);
+  assert.equal(root.firstChild.textContent.trim(), '9');
+});
+
+test('jsx: user component with props + children gets props as first arg, children variadically', () => {
+  let receivedProps = null;
+  let receivedChildren = null;
+  const Card = (props, ...children) => {
+    receivedProps = props;
+    receivedChildren = children;
+    return jsx('section', { children });
+  };
+  const node = jsx(Card, { foo: 1, bar: 2, children: 'inner' });
+  const root = mountToBody(node);
+  assert.equal(root.firstChild.textContent, 'inner');
+  assert.deepEqual(receivedProps, { foo: 1, bar: 2 });
+  assert.deepEqual(receivedChildren, ['inner']);
+});
+
+test('jsx: user component without props gets only children as args', () => {
+  let calledWith = null;
+  const Plain = (...args) => {
+    calledWith = args;
+    return jsx('div', { children: 'ok' });
+  };
+  jsx(Plain, { children: ['a', 'b', 'c'] });
+  assert.deepEqual(calledWith, ['a', 'b', 'c']);
+});
+
+test('jsx: custom kebab-case tag is variadic (props + spread children)', () => {
+  const node = jsxs('my-card', {
+    id: 'c1',
+    children: [jsx('h3', { children: 'h' }), jsx('p', { children: 'b' })],
+  });
+  const root = mountToBody(node);
+  assert.equal(root.firstChild.tagName.toLowerCase(), 'my-card');
+  assert.equal(root.firstChild.id, 'c1');
+  assert.equal(root.firstChild.children.length, 2);
 });
