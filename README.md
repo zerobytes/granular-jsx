@@ -213,7 +213,7 @@ const Panel = () => (
 );
 ```
 
-The `granular migrate` codemod converts most React-style `{cond && <X/>}` into `when(cond, () => <X/>)` automatically when `cond` is detected as reactive.
+The `granular migrate` command (from [`@granularjs/cli`](https://www.npmjs.com/package/@granularjs/cli)) converts most React-style `{cond && <X/>}` into `when(cond, () => <X/>)` automatically when `cond` is detected as reactive.
 
 ---
 
